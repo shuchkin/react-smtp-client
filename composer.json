@@ -1,0 +1,25 @@
+{
+    "name": "shuchkin/react-smtp-client",
+    "description": "ReactPHP async SMTP Client",
+    "keywords": ["smtp", "reactphp", "mail","async","php" ],,,
+    "homepage": "https://github.com/shuchkin/react-smtp-client",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Sergey Shuchkin (SMSPILOT)",
+            "homepage": "https://github.com/shuchkin/"
+        }
+    ],
+    "require": {
+        "php": ">=5.3.0",
+        "evenement/evenement": "^3.0 || ^2.0 || ^1.0",
+        "react/event-loop": "~0.5",
+        "react/socket": "^0.8.11",
+        "react/promise": "^2.2"
+    },
+    "autoload": {
+        "psr-4": {
+            "Shuchkin\\ReactSMTP\\": "src/"
+        }
+    }
+}
