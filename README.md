@@ -18,6 +18,23 @@ $smtp->send('info@example.org', 'sergey.shuchkin@gmail.com', 'Test ReactPHP mail
 
 $loop->run();
 ```
+## Using Google SMTP server
+```php
+$loop = \React\EventLoop\Factory::create();
+
+$smtp = new \Shuchkin\ReactSMTP\Client( $loop, 'tls://smtp.goolge.com:465', '*username@gmail.com','*password' ); // localhost:25
+
+$smtp->send('from.example@gmail.com', 'sergey.shuchkin@gmail.com', 'Test ReactPHP mailer', 'Hello, Sergey!')->then(
+	function() {
+		echo 'Message sent via Google SMTP'.PHP_EOL;
+	},
+	function ( \Exception $ex ) {
+		echo 'SMTP error '.$ex->getCode().' '.$ex->getMessage().PHP_EOL;
+	}
+);
+
+$loop->run();
+```
 ## Install
 
 The recommended way to install this library is [through Composer](https://getcomposer.org).
