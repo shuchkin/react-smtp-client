@@ -35,6 +35,7 @@ $smtp->send('from.example@gmail.com', 'sergey.shuchkin@gmail.com', 'Test ReactPH
 
 $loop->run();
 ```
+Google limit for personal SMTP 99 messages per 24 hours.
 ## Install
 
 The recommended way to install this library is [through Composer](https://getcomposer.org).
