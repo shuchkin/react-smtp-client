@@ -22,7 +22,7 @@ $loop->run();
 ```php
 $loop = \React\EventLoop\Factory::create();
 
-$smtp = new \Shuchkin\ReactSMTP\Client( $loop, 'tls://smtp.google.com:465', '*username@gmail.com','*password' ); // localhost:25
+$smtp = new \Shuchkin\ReactSMTP\Client( $loop, 'tls://smtp.google.com:465', '*username@gmail.com','*password' );
 
 $smtp->send('from.example@gmail.com', 'sergey.shuchkin@gmail.com', 'Test ReactPHP mailer', 'Hello, Sergey!')->then(
 	function() {
