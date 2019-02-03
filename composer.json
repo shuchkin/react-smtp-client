@@ -1,7 +1,7 @@
 {
     "name": "shuchkin/react-smtp-client",
     "description": "ReactPHP async SMTP Client",
-    "keywords": ["smtp", "reactphp", "mail","async","php" ],,,
+    "keywords": ["smtp", "reactphp", "mail","async","php" ],
     "homepage": "https://github.com/shuchkin/react-smtp-client",
     "license": "MIT",
     "authors": [
