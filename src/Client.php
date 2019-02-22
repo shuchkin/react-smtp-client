@@ -27,7 +27,7 @@ class Client extends \Evenement\EventEmitter implements \React\Socket\ConnectorI
 		$this->lines    = [];
 	}
 
-	public function send( $from, $to, $subject, $message, $headers = [] ) {
+	public function send( $from, $to, $subject, $message, $headers = null ) {
 		$deffered = new \React\Promise\Deferred();
 		$from = strpos($from,'<') === false ? '<' . $from . '>' : $from;
 		$lines    = [ 'MAIL FROM: '. $from ];
@@ -41,18 +41,20 @@ class Client extends \Evenement\EventEmitter implements \React\Socket\ConnectorI
 			$lines[] = 'RCPT TO: '.$t;
 		}
 
-		$headers = array_merge([
-			'From' => $from,
-			'To' => implode(', ', $to),
-			'Subject' => $subject
-		], $headers);
-
 		$headers_str = '';
 
-		foreach ($headers as $k => $v ) {
-			$headers_str .= $k.': '.$v."\r\n";
+		if ( is_string( $headers )) {
+			$headers_str = $headers;
+		} else if ( is_array($headers)) {
+			$headers = array_merge( [
+				'From'    => $from,
+				'To'      => implode( ', ', $to ),
+				'Subject' => $subject
+			], $headers );
+			foreach ( $headers as $k => $v ) {
+				$headers_str .= $k . ': ' . $v . "\r\n";
+			}
 		}
-
 
 		$lines[] = 'DATA';
 		$lines[] = $headers_str . "\r\n" . $message . "\r\n.";
