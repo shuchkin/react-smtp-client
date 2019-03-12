@@ -18,7 +18,7 @@ $smtp->send('info@example.org', 'sergey.shuchkin@gmail.com', 'Test ReactPHP mail
 
 $loop->run();
 ```
-## Using Google SMTP server
+## Google SMTP Server – How to Send Emails for Free
 ```php
 $loop = \React\EventLoop\Factory::create();
 
