@@ -37,7 +37,7 @@ $loop->run();
 ```
 Google limit for personal SMTP 99 messages per 24 hours.
 
-## Using mime/mail composer, send mails and attachments
+## Using mime/mail class, send mails and attachments
 See https://github.com/shuchkin/simplemail
 ```bash
 $ composer require shuchkin/simplemail
