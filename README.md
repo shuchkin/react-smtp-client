@@ -1,4 +1,6 @@
 # react-smtp-client
+[<img src="https://img.shields.io/endpoint.svg?url=https%3A%2F%2Fshieldsio-patreon.herokuapp.com%2Fshuchkin" />](https://www.patreon.com/shuchkin)
+
 [ReactPHP](https://reactphp.org/) async SMTP client to send a simple email.
 
 ## Basic Usage
