@@ -7,7 +7,7 @@ mail(). Simple UTF-8 text/plain messages out-of-the-box.
 Basic Usage
 -----------
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ php
+~~~php
 $loop = \React\EventLoop\Factory::create();
 
 $smtp = new \Shuchkin\ReactSMTP\Client( $loop ); // localhost:25
@@ -22,12 +22,12 @@ $smtp->send('info@example.org', 'sergey.shuchkin@gmail.com', 'Test ReactPHP mail
 );
 
 $loop->run();
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~
 
 Google SMTP Server – How to send bulk emails for free
 -----------------------------------------------------
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ php
+~~~php
 $loop = \React\EventLoop\Factory::create();
 
 $smtp = new \Shuchkin\ReactSMTP\Client( $loop, 'tls://smtp.gmail.com:465', 'username@gmail.com','password' );
@@ -47,7 +47,7 @@ foreach( $recipients as $to ) {
 }
 
 $loop->run();
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~
 
 Google limit for personal SMTP 99 messages per 24 hours.
 
@@ -56,11 +56,11 @@ Using mime/mail class, send mails and attachments
 
 See https://github.com/shuchkin/simplemail
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ bash
+~~~bash
 $ composer require shuchkin/simplemail
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ php
+~~~php
 $smtp = new \Shuchkin\ReactSMTP\Client( $loop, 'example.com:25', 'username', 'password' );
 
 // setup fabric
@@ -80,12 +80,12 @@ $sm->setTransport( function ( \Shuchkin\SimpleMail $m, $encoded ) use ( $smtp ) 
 });
 
 // send mail
-$m->to( ['sergey.shuchkin@gmail.com', 'reactphp@example.com'] )
+$sm->to( ['sergey.shuchkin@gmail.com', 'reactphp@example.com'] )
     ->setSubject('Async mail with ReactPHP')
     ->setText('Async mail sending perfect! See postcard')
     ->attach('image/postcard.jpg')
     ->send();
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~
 
 Install
 -------
@@ -96,9 +96,9 @@ Composer?](https://getcomposer.org/doc/00-intro.md)
 
 This will install the latest supported version:
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ bash
+~~~bash
 $ composer require shuchkin/react-smtp-client
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~
 
 Changelog
 ---------
@@ -107,5 +107,3 @@ Changelog
 actual versions in composer.json
 
 0.1.1 (2019-03-12) - Initial release
-
- 
