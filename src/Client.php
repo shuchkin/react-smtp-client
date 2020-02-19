@@ -2,22 +2,30 @@
 
 namespace Shuchkin\ReactSMTP;
 
-class Client extends \Evenement\EventEmitter implements \React\Socket\ConnectorInterface {
+use Evenement\EventEmitter;
+use Exception;
+use React\EventLoop\LoopInterface;
+use React\Promise\Deferred;
+use React\Socket\ConnectionInterface;
+use React\Socket\Connector;
+use React\Socket\ConnectorInterface;
+
+class Client extends EventEmitter implements ConnectorInterface {
 	private $loop;
 	private $uri;
 	private $connector;
-	/* @var \React\Socket\ConnectionInterface $conn */
+	/* @var ConnectionInterface $conn */
 	private $conn;
 	private $buffer;
 	private $lines;
-	/* @var \React\Promise\Deferred $deffered */
+	/* @var Deferred $deffered */
 	private $deffered;
 	private $username;
 	private $password;
 	private $queue;
 	private $auth;
 
-	public function __construct( \React\EventLoop\LoopInterface $loop, $uri = 25, $username = '', $password = '' ) {
+	public function __construct( LoopInterface $loop, $uri = 25, $username = '', $password = '' ) {
 		$this->loop     = $loop;
 		$this->uri      = $uri;
 		$this->username = $username;
@@ -28,7 +36,8 @@ class Client extends \Evenement\EventEmitter implements \React\Socket\ConnectorI
 	}
 
 	public function send( $from, $to, $subject, $message, $headers = null ) {
-		$deffered = new \React\Promise\Deferred();
+		$deffered = new Deferred();
+
 		$from = strpos($from,'<') === false ? '<' . $from . '>' : $from;
 		$lines    = [ 'MAIL FROM: '. $from ];
 
@@ -44,17 +53,25 @@ class Client extends \Evenement\EventEmitter implements \React\Socket\ConnectorI
 		$headers_str = '';
 
 		if ( is_string( $headers )) {
-			$headers_str = $headers;
-		} else if ( is_array($headers)) {
-			$headers = array_merge( [
-				'From'    => $from,
-				'To'      => implode( ', ', $to ),
-				'Subject' => $subject
-			], $headers );
+			$headers_str = trim($headers)."\r\n";
+		} elseif ( is_array($headers)) {
 			foreach ( $headers as $k => $v ) {
 				$headers_str .= $k . ': ' . $v . "\r\n";
 			}
 		}
+		if ( stripos( $headers_str, 'From:') === false ) {
+			$headers_str .= 'From: ' . $from . "\r\n";
+		}
+		if ( stripos( $headers_str, 'To:') === false ) {
+			$headers_str .= 'To: ' . implode( ', ', $to ) . "\r\n";
+		}
+		if ( stripos( $headers_str, 'Subject:') === false ) {
+			$headers_str .= 'Subject: =?UTF-8?B?'.base64_encode($subject)."?=\r\n";
+		}
+		if ( stripos( $headers_str, 'Content-Type:') === false ) {
+			$headers_str .= "Content-Type: text/plain; charset=UTF-8\r\n";
+		}
+
 
 		$lines[] = 'DATA';
 		$lines[] = $headers_str . "\r\n" . $message . "\r\n.";
@@ -72,7 +89,7 @@ class Client extends \Evenement\EventEmitter implements \React\Socket\ConnectorI
 			$this->connect();
 			return;
 		}
-		if ( \count($this->lines) ) {
+		if ( count($this->lines) ) {
 			return;
 		}
 		if ( $this->auth !== 'OK' ) {
@@ -83,7 +100,7 @@ class Client extends \Evenement\EventEmitter implements \React\Socket\ConnectorI
 				$this->lines[] = base64_encode( $this->password );
 			}
 			$this->auth = 'LOGIN';
-		} else if ( \count( $this->queue ) ) {
+		} elseif ( count( $this->queue ) ) {
 			$this->buffer   = '';
 			$m              = array_shift( $this->queue );
 			$this->lines    = $m['lines'];
@@ -101,11 +118,11 @@ class Client extends \Evenement\EventEmitter implements \React\Socket\ConnectorI
 		if ( $uri ) {
 			$this->uri = $uri;
 		}
-		$this->connector = new \React\Socket\Connector( $this->loop );
+		$this->connector = new Connector( $this->loop );
 
 		/** @noinspection NullPointerExceptionInspection */
 		return $this->connector->connect( $this->uri )->then(
-			function ( \React\Socket\ConnectionInterface $conn ) {
+			function ( ConnectionInterface $conn ) {
 				if ( isset( $this->listeners['debug'] ) ) {
 					$this->emit( 'debug', [ 'Connected to ' . $this->uri ] );
 				}
@@ -118,13 +135,12 @@ class Client extends \Evenement\EventEmitter implements \React\Socket\ConnectorI
 				$this->conn = $conn;
 				$this->processQueue();
 			},
-			function ( \Exception $ex ) {
+			function ( Exception $ex ) {
 				if ( isset( $this->listeners['debug'] ) ) {
 					$this->emit( 'debug', [ $ex->getMessage() ] );
 				}
 				foreach ( $this->queue as $m ) {
-					/** @noinspection PhpUndefinedMethodInspection */
-					$m['deffered']->reject( $ex );
+					$m['deffered']->reject( $ex, $m['deffered'] );
 				}
 				$this->queue = [];
 			} );
@@ -140,11 +156,11 @@ class Client extends \Evenement\EventEmitter implements \React\Socket\ConnectorI
 			return;
 		}
 		if ( strpos( $this->buffer, '5' ) === 0 ) {
-			$this->close( new \Exception( trim( $this->buffer) )  );
+			$this->close( new Exception( trim( $this->buffer) )  );
 			return;
 		}
 
-		if ( strpos( $this->buffer, '250' ) === 0 && !\count($this->lines) ) {
+		if ( strpos( $this->buffer, '250' ) === 0 && ! count($this->lines) ) {
 			$this->deffered->resolve( $this->buffer );
 			$this->reset();
 			$this->processQueue();
@@ -155,7 +171,7 @@ class Client extends \Evenement\EventEmitter implements \React\Socket\ConnectorI
 			$this->processQueue();
 		}
 		$this->buffer = '';
-		if ( \count( $this->lines ) ) {
+		if ( count( $this->lines ) ) {
 			$line = array_shift( $this->lines );
 			$this->conn->write( $line . "\r\n" );
 			if ( isset( $this->listeners['debug'] ) ) {
@@ -165,14 +181,13 @@ class Client extends \Evenement\EventEmitter implements \React\Socket\ConnectorI
 	}
 
 	/**
-	 * @param \Exception|null $reason
+	 * @param Exception|null $reason
 	 */
 	public function close( $reason = null ) {
 		if ( !$reason ) {
-			$reason = new \Exception( 'Manually closed' );
+			$reason = new Exception( 'Manually closed' );
 		}
 		foreach ( $this->queue as $m ) {
-			/** @noinspection PhpUndefinedMethodInspection */
 			$m['deffered']->reject( $reason );
 		}
 		$this->buffer = '';
@@ -201,14 +216,13 @@ class Client extends \Evenement\EventEmitter implements \React\Socket\ConnectorI
 			$this->emit( 'debug', [ 'Disconnected from ' . $this->uri ] );
 		}
 		foreach ( $this->queue as $m ) {
-			/** @noinspection PhpUndefinedMethodInspection */
-			$m['deffered']->reject( new \Exception( 'Disconnected' ) );
+			$m['deffered']->reject( new Exception( 'Disconnected' ) );
 		}
 		$this->queue = [];
 		$this->reset();
 	}
 
-	public function handleError( \Exception $ex ) {
+	public function handleError( Exception $ex ) {
 		if ( isset( $this->listeners['debug'] ) ) {
 			$this->emit( 'debug', ['Error: ' . $ex->getMessage()] );
 		}
