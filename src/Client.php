@@ -135,12 +135,12 @@ class Client extends EventEmitter implements ConnectorInterface {
 				$this->conn = $conn;
 				$this->processQueue();
 			},
-			function ( Exception $ex ) {
+			function ( \Throwable $ex ) {
 				if ( isset( $this->listeners['debug'] ) ) {
 					$this->emit( 'debug', [ $ex->getMessage() ] );
 				}
 				foreach ( $this->queue as $m ) {
-					$m['deffered']->reject( $ex, $m['deffered'] );
+					$m['deffered']->reject( $ex );
 				}
 				$this->queue = [];
 			} );
@@ -161,8 +161,13 @@ class Client extends EventEmitter implements ConnectorInterface {
 		}
 
 		if ( strpos( $this->buffer, '250' ) === 0 && ! count($this->lines) ) {
-			$this->deffered->resolve( $this->buffer );
-			$this->reset();
+			if ( $this->auth === 'LOGIN' && empty( $this->username ) ) {
+				$this->auth = 'OK';
+			}
+			if ( $this->deffered ) {
+				$this->deffered->resolve( $this->buffer );
+				$this->reset();
+			}
 			$this->processQueue();
 		}
 
